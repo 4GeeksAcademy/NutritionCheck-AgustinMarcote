@@ -1,0 +1,703 @@
+{
+  "name": "Is this snack Healthy?",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nutrition-check",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -688,
+        48
+      ],
+      "id": "1c8fc736-5142-4177-94b5-2b01d7b2a035",
+      "name": "Webhook",
+      "webhookId": "3c6c5bd9-ba41-4005-8b3e-bdb1fb04320a"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ad4f3ab1-babb-4427-ae50-6b950a85fe1c",
+              "leftValue": "={{ $json.barcode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -160,
+        48
+      ],
+      "id": "b2f0daa1-81fa-4c19-8768-107cf3bff80c",
+      "name": "Validate - Barcode Provided"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cf5611f3-47c1-4541-8b35-c23e49f30f1d",
+              "name": "responseBody",
+              "value": "=={{ JSON.stringify({\n  status: \"info\",\n  message: \"SnackCheck tells you whether a packaged food is a smart everyday choice. Send a product barcode and I'll look it up and give you a friendly verdict.\",\n  howToUse: \"POST a JSON body with a 'barcode' field.\",\n  example: { barcode: \"3017620422003\" }\n}) }}",
+              "type": "string"
+            },
+            {
+              "id": "fbc52e8b-05dc-493a-8d38-ad4c4ea9d6c3",
+              "name": "contentType",
+              "value": "application/json",
+              "type": "string"
+            },
+            {
+              "id": "b4ff0df2-214d-45a1-918f-a74b10449b4e",
+              "name": "statusCode",
+              "value": 200,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1856,
+        1344
+      ],
+      "id": "fb1cdd34-3cbb-4304-963a-e7db2e179f06",
+      "name": "Error - No Barcode"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9f3384e7-ad83-44be-9981-2efcc5bc7808",
+              "leftValue": "={{ $json.barcode }}",
+              "rightValue": "^\\d+$",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        192,
+        32
+      ],
+      "id": "38889d7e-b1fe-4284-9fd1-44a5fa3be5d4",
+      "name": "Validate - Barcode Number"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "87284183-961a-4a65-a9c5-37f141e8b6dc",
+              "name": "responseBody",
+              "value": "=={{ JSON.stringify({\n  status: \"error\",\n  code: \"INVALID_BARCODE\",\n  message: \"That doesn't look like a valid barcode.\",\n  hint: \"Barcodes are numeric only — please check for typos or extra characters.\",\n  example: { barcode: \"3017620422003\" }\n}) }}",
+              "type": "string"
+            },
+            {
+              "id": "f0c298bf-cb17-41c7-8729-f1b9c75171e0",
+              "name": "contentType",
+              "value": "application/json",
+              "type": "string"
+            },
+            {
+              "id": "6ea51987-ae37-4ce7-a182-8e247c2e8593",
+              "name": "statusCode",
+              "value": 400,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1856,
+        960
+      ],
+      "id": "2940f5d0-3fba-4178-a262-4e4df42aea6c",
+      "name": "Error - Invalid Barcode Number"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1e71f4bc-838d-42c9-a2ac-917e65db49fb",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        640,
+        16
+      ],
+      "id": "a1045231-6475-4bb5-bc20-9314905a8ba7",
+      "name": "Check - Found Product"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "96cf5503-f326-4a90-8502-0f8a93f6caae",
+              "name": "responseBody",
+              "value": "=={{ JSON.stringify({\n  status: \"error\",\n  code: \"PRODUCT_NOT_FOUND\",\n  message: \"We couldn't find that product in the database.\",\n  hint: \"Double-check the barcode, or try a different product.\",\n  example: { barcode: \"3017620422003\" }\n}) }}",
+              "type": "string"
+            },
+            {
+              "id": "64ad6dc5-b4e4-4a3a-9263-a07bcfbe45d4",
+              "name": "contentType",
+              "value": "application/json",
+              "type": "string"
+            },
+            {
+              "id": "fadb9a76-aea0-401d-b6a1-11268c39c383",
+              "name": "statusCode",
+              "value": 404,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1904,
+        736
+      ],
+      "id": "cd4efa50-3cfb-4d79-8e89-573407eab37c",
+      "name": "Error - Product Not Found"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a58845f9-56a1-4e39-9d1e-c84518a6318f",
+              "leftValue": "={{ (!$json.product?.nutriscore_grade || $json.product?.nutriscore_grade === 'unknown') && $json.product?.nutriments?.sugars_100g == null && $json.product?.nutriments?.salt_100g == null && $json.product?.nutriments?.fat_100g == null }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        928,
+        0
+      ],
+      "id": "698faa8e-50b5-4e73-9abb-1cf300f7ac91",
+      "name": "Check - Nutrient Data Missing"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b7328ffa-3ad5-4b41-8523-d21c6c153760",
+              "name": "responseBody",
+              "value": "=={{ JSON.stringify({\n  status: \"insufficient_data\",\n  message: \"This product doesn't have enough nutrition data for us to give a verdict.\",\n  hint: \"Try a different product — this one is missing key nutrition info in the database.\",\n  example: { barcode: \"3017620422003\" }\n}) }}",
+              "type": "string"
+            },
+            {
+              "id": "c07f0b36-c7b7-48ad-8929-4f2b78a0b71c",
+              "name": "contentType",
+              "value": "application/json",
+              "type": "string"
+            },
+            {
+              "id": "d49f164f-86b7-45ca-a62a-f7b15d030fca",
+              "name": "statusCode",
+              "value": 200,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1888,
+        -832
+      ],
+      "id": "a21e04dc-e6b5-4741-b47f-1944d70ba62f",
+      "name": "Error - Insuficient Data"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You're a friendly, funny supermarket buddy giving someone a quick, honest verdict on a packaged food they just scanned. Be witty and warm — like a friend who knows their stuff about nutrition but never lectures or shames.\n\nProduct: {{ $json.productName }} by {{ $json.brand }}\nOverall verdict: {{ $json.verdictLevel }}\nNutri-Score: {{ $json.nutriscoreGrade || 'unknown' }}\nSugar level: {{ $json.sugarLevel }}\nSalt level: {{ $json.saltLevel }}\nFat level: {{ $json.fatLevel }}\nConcern score: {{ $json.concernScore }}/3 nutrients flagged high\n\nTone rules:\n- If verdict is \"healthy\": be genuinely enthusiastic, maybe a little playful — like you're hyping up a good choice.\n- If verdict is \"moderate\": be warm and balanced — \"not bad, not perfect\" energy, a bit of light humor about moderation.\n- If verdict is \"unhealthy\": be gently funny, never harsh or judgmental — think \"I still love you but let's be real\" rather than a lecture. Never make the reader feel bad for having picked it up.\n\nWrite 2-3 sentences. Reference at least one specific nutrient by name if it's notably high or notably good, don't just repeat the raw numbers — interpret them naturally, like you're translating nutrition-speak into normal human conversation. A light joke or a fun comparison is welcome, but keep it genuinely helpful, not just silly for its own sake.",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1280,
+        0
+      ],
+      "id": "7d8546b6-de13-47c7-adba-cc6c7d630985",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        112
+      ],
+      "id": "97c4cd83-bd01-4684-93ae-1a28f6cfdec2",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "fqodzHnSahWtBcMk",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "62ea33d9-4634-42f5-ab7e-c0ef4f03549a",
+              "name": "verdictMessage",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1632,
+        0
+      ],
+      "id": "2178a499-74d2-4428-a3ec-f30923c2f818",
+      "name": "AI Message"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const p = $json.product ?? {};\nconst n = p.nutriments ?? {};\n\nconst sugar = n.sugars_100g ?? null;\nconst salt  = n.salt_100g ?? null;\nconst fat   = n.fat_100g ?? null;\nconst energy = n['energy-kcal_100g'] ?? null;\n\nconst sugarLevel = sugar == null ? null : sugar < 5 ? 'low' : sugar <= 22.5 ? 'medium' : 'high';\nconst saltLevel  = salt == null ? null : salt > 1.5 ? 'high' : 'low';\nconst fatLevel   = fat == null ? null : fat > 17.5 ? 'high' : 'low';\n\nconst concernScore = [sugarLevel, saltLevel, fatLevel]\n  .filter(l => l === 'high').length;\n\nconst trafficLightVerdict =\n  concernScore === 0 ? 'healthy' :\n  concernScore === 1 ? 'moderate' :\n  'unhealthy';\n\nconst grade = p.nutriscore_grade?.toLowerCase() || null;\nconst nutriScoreVerdict =\n  ['a', 'b'].includes(grade) ? 'healthy' :\n  grade === 'c' ? 'moderate' :\n  ['d', 'e'].includes(grade) ? 'unhealthy' :\n  null;\n\nconst rank = { healthy: 0, moderate: 1, unhealthy: 2 };\nconst verdictLevel = nutriScoreVerdict\n  ? (rank[trafficLightVerdict] > rank[nutriScoreVerdict] ? trafficLightVerdict : nutriScoreVerdict)\n  : trafficLightVerdict;\n\nreturn {\n  json: {\n    productName: p.product_name ?? null,\n    brand: p.brands ?? null,\n    sugar, salt, fat, energy,\n    sugarLevel, saltLevel, fatLevel,\n    concernScore,\n    nutriscoreGrade: grade,\n    verdictLevel\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        16
+      ],
+      "id": "c11e7504-25a9-4cbd-aa75-4f296a89b4f7",
+      "name": "Code - Extraction Information"
+    },
+    {
+      "parameters": {
+        "numberInputs": 5
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2512,
+        0
+      ],
+      "id": "bcddfd52-45a2-4301-a21d-e796dd34ca9e",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "16687b60-0e55-4851-9667-9b279d5311e7",
+              "name": "responseBody",
+              "value": "==🥗 SnackCheck Verdict\n\nProduct: {{ $('Code - Extraction Information').item.json.productName }} by {{ $('Code - Extraction Information').item.json.brand }}\n\n{{ $('Code - Extraction Information').item.json.sugarLevel === 'high' ? '🔴' : '🟢' }} Sugar: {{ $('Code - Extraction Information').item.json.sugar }}g ({{ $('Code - Extraction Information').item.json.sugarLevel }})\n{{ $('Code - Extraction Information').item.json.saltLevel === 'high' ? '🔴' : '🟢' }} Salt: {{ $('Code - Extraction Information').item.json.salt }}g ({{ $('Code - Extraction Information').item.json.saltLevel }})\n{{ $('Code - Extraction Information').item.json.fatLevel === 'high' ? '🔴' : '🟢' }} Fat: {{ $('Code - Extraction Information').item.json.fat }}g ({{ $('Code - Extraction Information').item.json.fatLevel }})\nNutri-Score: {{ $('Code - Extraction Information').item.json.nutriscoreGrade || 'unknown' }}\n\n{{ $json.verdictMessage }}",
+              "type": "string"
+            },
+            {
+              "id": "a6a45270-3f9d-4ddd-8a3c-876bdbe75ffb",
+              "name": "contentType",
+              "value": "text/plain",
+              "type": "string"
+            },
+            {
+              "id": "77f52e37-7810-49aa-9c41-0925f44d6ac7",
+              "name": "statusCode",
+              "value": 200,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1856,
+        0
+      ],
+      "id": "a5308d37-feae-44ee-9393-f8dda09d28b9",
+      "name": "Success Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.responseBody }}",
+        "options": {
+          "responseCode": "={{ $json.statusCode }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type:",
+                "value": "={{ $json.contentType }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2752,
+        48
+      ],
+      "id": "97da22dd-95fa-4ea3-ab18-60c2845680a5",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "body.barcode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -448,
+        48
+      ],
+      "id": "88461db2-9142-4f67-87bf-2bddf2c23251",
+      "name": "Filtrate - Only Barcode"
+    },
+    {
+      "parameters": {
+        "url": "=https://world.openfoodfacts.org/api/v2/product/{{ $json.barcode }}.json?fields=product_name,brands,nutriscore_grade,nutriments",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        480,
+        16
+      ],
+      "id": "4659e876-2f12-4c43-8f21-a53a08af9781",
+      "name": "HTTP Product",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filtrate - Only Barcode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate - Barcode Provided": {
+      "main": [
+        [
+          {
+            "node": "Validate - Barcode Number",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error - No Barcode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate - Barcode Number": {
+      "main": [
+        [
+          {
+            "node": "HTTP Product",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error - Invalid Barcode Number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error - Invalid Barcode Number": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Error - No Barcode": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Check - Found Product": {
+      "main": [
+        [
+          {
+            "node": "Check - Nutrient Data Missing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error - Product Not Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check - Nutrient Data Missing": {
+      "main": [
+        [
+          {
+            "node": "Error - Insuficient Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code - Extraction Information",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "AI Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - Extraction Information": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Message": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success Response": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Error - Insuficient Data": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error - Product Not Found": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrate - Only Barcode": {
+      "main": [
+        [
+          {
+            "node": "Validate - Barcode Provided",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Product": {
+      "main": [
+        [
+          {
+            "node": "Check - Found Product",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "954a14f4-3c03-4586-a85a-ece8b58f76c7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9e6d4fac6104a78b8732f6be0a84147877f6d659a836d588bbabd9a557a6f16b"
+  },
+  "nodeGroups": [],
+  "id": "p1YzoPLyDps0ioWx",
+  "tags": []
+}
